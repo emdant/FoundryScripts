@@ -1,2 +1,2 @@
 # FoundryScripts
-Some JS scripts I made for my games using Foundry VTT.
+Some JS scripts I made for my games while using Foundry VTT.
