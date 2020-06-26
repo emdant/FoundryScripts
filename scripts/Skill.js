@@ -12,33 +12,45 @@ const config = {
   withSubskills: ["art", "crf", "knw", "lor", "prf", "pro"],
   unknownSkill: "Unknown Skill"
 };
+const css = `<style>
+.skill-dialog-box-buttons .dialog-buttons {
+  display: flex; 
+  flex-flow: row wrap; 
+}
+
+.skill-dialog-box-buttons .dialog-button {
+  flex: 1 0 33%;
+  width: auto;
+  padding: 2px 5px;
+}
+</style>`;
 // END CONFIGURATION
 
-async function _rollSkill(type, actor) {
-  await actor.rollSkill(type, { event: new MouseEvent({}), skipDialog: true });
+async function _rollSkill(skillId, actor) {
+  await actor.rollSkill(skillId, { event: new MouseEvent({}), skipDialog: true });
 };
 
 function actorsSkill(actors) {
 
-  const skillButtons = config.skills.reduce((buttons, skillType, index) => {
+  const skillButtons = config.skills.reduce((buttons, skillId, index) => {
     let label = config.labels[index];
     if (label == null) 
-      label = `${CONFIG.PF1.skills[skillType]} ` || config.unknownSkill;
-    if (actors.length === 1 && !config.withSubskills.includes(skillType) && label !== config.unknownSkill) {
-      const mod = actors[0].getSkill(skillType).mod;
+      label = `${CONFIG.PF1.skills[skillId]} ` || config.unknownSkill;
+    if (actors.length === 1 && !config.withSubskills.includes(skillId) && label !== config.unknownSkill) {
+      const mod = actors[0].getSkill(skillId).mod;
       label = label + (mod < 0 ? "" : "+") + mod;
     }
 
-    buttons[skillType] = {
+    buttons[skillId] = {
       label: label
     };
 
-    if (skillType === "knw")
-      buttons[skillType].callback = () => actors.forEach(actor => actorKnowledge(actor));
-    else if (config.withSubskills.includes(skillType))
-      buttons[skillType].callback = () => actors.forEach(actor => actorSubSkill(actor, label, skillType));
+    if (skillId === "knw")
+      buttons[skillId].callback = () => actors.forEach(actor => actorKnowledge(actor));
+    else if (config.withSubskills.includes(skillId))
+      buttons[skillId].callback = () => actors.forEach(actor => actorSubSkill(actor, label, skillId));
     else 
-      buttons[skillType].callback = () => actors.forEach(actor => _rollSkill(skillType, actor));
+      buttons[skillId].callback = () => actors.forEach(actor => _rollSkill(skillId, actor));
     
     return buttons;
   }, {});
@@ -46,8 +58,10 @@ function actorsSkill(actors) {
   const msg = `Choose a skill to roll for the following actor(s): <strong>${actors.map(o => o.name).join("</strong>, <strong>")}</strong>`;
     new Dialog({
         title: "Roll skill", 
-        content: `<p>${msg}</p>`,
+        content: `<p>${msg}</p>` + css,
         buttons: skillButtons ,
+    }, {
+      classes: ["skill-dialog-box-buttons"],
     }).render(true);   
 
 }
@@ -55,13 +69,13 @@ function actorsSkill(actors) {
 function actorSubSkill(actor, skillName, skill) {
 
   const subSkills = actor.getSkill(skill).subSkills;
-  const subSkillTypes = Object.keys(subSkills).filter(name => name.startsWith(skill))
-  if (!subSkillTypes.length) {
+  const subSkillIds = Object.keys(subSkills).filter(name => name.startsWith(skill))
+  if (!subSkillIds.length) {
     return;
   }
 
   let subSkillButtons = [];
-  for (const sub of subSkillTypes) {
+  for (const sub of subSkillIds) {
     subSkillButtons.push({
       label: `${subSkills[sub].name} +${subSkills[sub].mod}`,
       callback: () => _rollSkill(`${skill}.subSkills.${sub}`, actor),
@@ -71,8 +85,10 @@ function actorSubSkill(actor, skillName, skill) {
   const msg = `Choose a ${skillName} skill roll for <strong>${actor.name}</strong>`
     new Dialog({
         title: `Roll ${skillName} skill`, 
-        content: `<p>${msg}</p>`,
+        content: `<p>${msg}</p>` + css,
         buttons: subSkillButtons ,
+    }, {
+      classes: ["skill-dialog-box-buttons"],
     }).render(true);
 }
 
@@ -81,14 +97,14 @@ function actorKnowledge(actor) {
   const knowledges = ["kar","kdu", "ken", "kge", "khi",
     "klo", "kna", "kno", "kpl", "kre"];
 
-    const knowledgeButtons = knowledges.reduce((buttons, skillType) => {
-      let label = `${CONFIG.PF1.skills[skillType]} `;
-      const mod = actor.getSkill(skillType).mod;
+    const knowledgeButtons = knowledges.reduce((buttons, skillId) => {
+      let label = `${CONFIG.PF1.skills[skillId]} `;
+      const mod = actor.getSkill(skillId).mod;
       label = label + (mod < 0 ? "" : "+") + mod;
     
-      buttons[skillType] = {
+      buttons[skillId] = {
         label: label,
-        callback: () => _rollSkill(skillType, actor),
+        callback: () => _rollSkill(skillId, actor),
       };
       return buttons;
     }, {});
@@ -96,8 +112,10 @@ function actorKnowledge(actor) {
     const msg = `Choose a knowledge skill roll for <strong>${actor.name}</strong>`
     new Dialog({
         title: `Roll knowledge skill`, 
-        content: `<p>${msg}</p>`,
+        content: `<p>${msg}</p>` + css,
         buttons: knowledgeButtons,
+    }, {
+      classes: ["skill-dialog-box-buttons"],
     }).render(true);
 }
 
@@ -115,18 +133,21 @@ if (!actors.length)
   ui.notifications.warn("No applicable actor(s) found");
 else {
 
-  if(selected || actors.length === 1) {
+  if (selected || actors.length === 1) {
     actorsSkill(actors)
   }
   else if (actors.length > 1) {
       const actorButtons = actors.map(actor => ({label: actor.name, callback: () => actorsSkill([actor])}));
   
       const msg = "Choose an actor for your skill roll";
+
   
       new Dialog({
         title: "Choose an actor",
-        content: `<p>${msg}</p>`,
+        content: `<p>${msg}</p>` + css,
         buttons: actorButtons,
+      }, {
+        classes: ["skill-dialog-box-buttons"],
       }).render(true);
   }
 
