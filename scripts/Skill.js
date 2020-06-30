@@ -62,6 +62,7 @@ function actorsSkill(actors) {
         buttons: skillButtons ,
     }, {
       classes: ["skill-dialog-box-buttons"],
+      resizable: true,
     }).render(true);   
 
 }
