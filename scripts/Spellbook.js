@@ -41,8 +41,17 @@ function spellLevelChoice(actor) {
 function spellChoice(actor, spells) {
   
   const spellButtons = spells.map(spell => {
+    let label = spell.name;
+    if (spell.charges > 0) {
+      label = `<b>${label}</b>`;
+    }
+
+    if (spell.spellbook.name === "Spell-likes") {
+      label += " (SL)";
+    }
+
     return {
-      label: spell.name,
+      label: label,
       callback: () => actor.useSpell(spell, new MouseEvent({})),
     }
   });

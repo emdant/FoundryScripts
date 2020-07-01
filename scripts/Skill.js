@@ -37,8 +37,12 @@ function actorsSkill(actors) {
     if (label == null) 
       label = `${CONFIG.PF1.skills[skillId]} ` || config.unknownSkill;
     if (actors.length === 1 && !config.withSubskills.includes(skillId) && label !== config.unknownSkill) {
-      const mod = actors[0].getSkill(skillId).mod;
+      const skill = actors[0].getSkill(skillId);
+      const mod = skill.mod;
       label = label + (mod < 0 ? "" : "+") + mod;
+      if (skill.rt && skill.rank === 0) {
+        label = `<span style="color: red;">${label}</span>`;
+      }
     }
 
     buttons[skillId] = {
@@ -100,8 +104,12 @@ function actorKnowledge(actor) {
 
     const knowledgeButtons = knowledges.reduce((buttons, skillId) => {
       let label = `${CONFIG.PF1.skills[skillId]} `;
-      const mod = actor.getSkill(skillId).mod;
+      const skill = actor.getSkill(skillId);
+      const mod = skill.mod;
       label = label + (mod < 0 ? "" : "+") + mod;
+      if (skill.rt && skill.rank === 0) {
+        label = `<span style="color: red;">${label}</span>`;
+      }
     
       buttons[skillId] = {
         label: label,
