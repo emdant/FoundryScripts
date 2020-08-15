@@ -1,8 +1,3 @@
-// CONFIGURATION
-// If one or more tokens are selected, those will be used instead of the listed actors
-// Leave the actorNames array empty to guess the players
-// Example actorNames: `actorNames: ["Bob", "John"],`
-// In skills array put custom skills first and match their index with the labels array index
 const config = {
   skills: ["knw", "acr", "apr", "blf", "clm", "crf", "dip", "dev", 
           "dis", "esc", "fly", "han", "hea", "int", "lin", 
@@ -24,7 +19,6 @@ const css = `<style>
   padding: 2px 5px;
 }
 </style>`;
-// END CONFIGURATION
 
 async function _rollSkill(skillId, actor) {
   await actor.rollSkill(skillId, { event: new MouseEvent({}), skipDialog: true });
@@ -45,19 +39,22 @@ function actorsSkill(actors) {
       }
     }
 
-    buttons[skillId] = {
+    let skill = {
+      id: skillId,
       label: label
     };
 
     if (skillId === "knw")
-      buttons[skillId].callback = () => actors.forEach(actor => actorKnowledge(actor));
+      skill.callback = () => actors.forEach(actor => actorKnowledge(actor));
     else if (config.withSubskills.includes(skillId))
-      buttons[skillId].callback = () => actors.forEach(actor => actorSubSkill(actor, label, skillId));
+      skill.callback = () => actors.forEach(actor => actorSubSkill(actor, label, skillId));
     else 
-      buttons[skillId].callback = () => actors.forEach(actor => _rollSkill(skillId, actor));
+      skill.callback = () => actors.forEach(actor => _rollSkill(skillId, actor));
     
+    buttons.push(skill);
     return buttons;
-  }, {});
+  }, []);
+  skillButtons.sort((skill1, skill2) => skill1.id.localeCompare(skill2.id));
 
   const msg = `Choose a skill to roll for the following actor(s): <strong>${actors.map(o => o.name).join("</strong>, <strong>")}</strong>`;
     new Dialog({
@@ -149,7 +146,6 @@ else {
       const actorButtons = actors.map(actor => ({label: actor.name, callback: () => actorsSkill([actor])}));
   
       const msg = "Choose an actor for your skill roll";
-
   
       new Dialog({
         title: "Choose an actor",
