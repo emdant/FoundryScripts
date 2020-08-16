@@ -90,20 +90,20 @@ function makeFavorites(actor) {
     return;
   }
 
-  const favouriteSpellNames = (new DOMParser()).parseFromString(favoritesItem.data.data.description.value.replace(/<br ?\/?>/g, '\n'), 'text/html').body.innerText.split(/[\r\n]+[\s]*/);
+  const favoriteSpellNames = (new DOMParser()).parseFromString(favoritesItem.data.data.description.value.replace(/<br ?\/?>/g, '\n'), 'text/html').body.innerText.split(/[\r\n]+[\s]*/);
   const allSpells = actor.items.filter(item => item.type === "spell");
 
-  const favouriteSpells = allSpells.reduce((favSpells, spell) => {
-    if(favSpells.length === favouriteSpellNames.length)
+  const favoriteSpells = allSpells.reduce((favSpells, spell) => {
+    if(favSpells.length === favoriteSpellNames.length)
       return favSpells;
 
-    if(favouriteSpellNames.includes(spell.data.name))
+    if(favoriteSpellNames.includes(spell.data.name))
       favSpells.push(spell);
 
     return favSpells;
   }, []);
 
-  spellChoice(actor, favouriteSpells);
+  spellChoice(actor, favoriteSpells);
 }
 
 
