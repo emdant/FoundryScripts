@@ -1,3 +1,13 @@
+/**   Configuration   **/
+//  
+//  Change favoritesItemName value to the item name storing favorite spells in your inventory,
+//  in the item description you have to list your favorite spells name, one on each line.
+//  Mind that item names and spell names are case sensitive.
+//  You can also change the button label of the favorites button.
+//
+const favoritesItemName = "Favorites";
+const favoritesButtonName = "Favorites";
+
 const css = `<style>
 .spell-dialog-box-buttons .dialog-buttons {
   display: flex; 
@@ -10,6 +20,7 @@ const css = `<style>
   padding: 2px 5px;
 }
 </style>`;
+
 
 function spellLevelChoice(actor) {
 
@@ -28,11 +39,16 @@ function spellLevelChoice(actor) {
     }
   })
 
+  const favoritesButton = {
+    label: `<b>${favoritesButtonName}<b>`,
+    callback: () => makeFavorites(actor),
+  }
+
   const msg = `Choose a spell level`
   new Dialog({
     title: "Spell level",
       content: `<p>${msg}</p>` + css,
-      buttons: spellLevelButtons,
+      buttons: [...spellLevelButtons, favoritesButton],
     }, {
       classes: ["spell-dialog-box-buttons"],
   }).render(true);
@@ -65,6 +81,29 @@ function spellChoice(actor, spells) {
       classes: ["spell-dialog-box-buttons"],
       resizable: true,
   }).render(true);
+}
+
+function makeFavorites(actor) {
+  const favoritesItem = actor.items.find(item => item.data.name === favoritesItemName && item.data.type === "loot");
+  if(!favoritesItem) {
+    ui.notifications.warn(`To use favorites spells, you have to create an item in your inventory named ${favoritesItemName}, listing your favorite spells in the description.`);
+    return;
+  }
+
+  const favouriteSpellNames = (new DOMParser()).parseFromString(favoritesItem.data.data.description.value.replace(/<br ?\/?>/g, '\n'), 'text/html').body.innerText.split(/[\r\n]+[\s]*/);
+  const allSpells = actor.items.filter(item => item.type === "spell");
+
+  const favouriteSpells = allSpells.reduce((favSpells, spell) => {
+    if(favSpells.length === favouriteSpellNames.length)
+      return favSpells;
+
+    if(favouriteSpellNames.includes(spell.data.name))
+      favSpells.push(spell);
+
+    return favSpells;
+  }, []);
+
+  spellChoice(actor, favouriteSpells);
 }
 
 
