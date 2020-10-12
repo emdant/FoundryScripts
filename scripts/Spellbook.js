@@ -29,15 +29,17 @@ function spellLevelChoice(actor) {
     list[spell.data.data.level] = list[spell.data.data.level] || [];
     list[spell.data.data.level].push(spell);
     return list;
-  }, []);
+  }, {});
 
 
-  const spellLevelButtons = spellsByLevel.map((cur, index) => {
+  const spellLevelButtons = Object.keys(spellsByLevel).map((cur) => {
     return {
-      label: `Level ${index}`,
-      callback: () => spellChoice(actor, spellsByLevel[index])
+      label: `Level ${cur}`,
+      callback: () => spellChoice(actor, spellsByLevel[cur])
     }
   })
+
+  console.log(spellLevelButtons);
 
   const favoritesButton = {
     label: `<b>${favoritesButtonName}<b>`,
@@ -90,14 +92,17 @@ function makeFavorites(actor) {
     return;
   }
 
-  const favoriteSpellNames = (new DOMParser()).parseFromString(favoritesItem.data.data.description.value.replace(/<br ?\/?>/g, '\n'), 'text/html').body.innerText.split(/[\r\n]+[\s]*/);
+  const favoriteSpellNames = (new DOMParser()).parseFromString(favoritesItem.data.data.description.value.replace(/<br ?\/?>/g, '\n'), 'text/html')
+    .body.innerText.split(/[\r\n]+[\s]*/)
+    .map((spellName => spellName.toLowerCase()));
+
   const allSpells = actor.items.filter(item => item.type === "spell");
 
   const favoriteSpells = allSpells.reduce((favSpells, spell) => {
     if(favSpells.length === favoriteSpellNames.length)
       return favSpells;
 
-    if(favoriteSpellNames.includes(spell.data.name))
+    if(favoriteSpellNames.includes(spell.data.name.toLowerCase()))
       favSpells.push(spell);
 
     return favSpells;
@@ -110,7 +115,7 @@ function makeFavorites(actor) {
 const tokens = canvas.tokens.controlled;
 let actors = tokens.map(o => o.actor);
 if (!actors.length)
-  actors = game.actors.entities.filter(o => o.isPC && o.hasPerm(game.user, "OWNER"));
+  actors = game.actors.entities.filter(o => o.hasPlayerOwner && o.hasPerm(game.user, "OWNER"));
 actors = actors.filter(o => o.hasPerm(game.user, "OWNER"));
 
 if (!actors.length)

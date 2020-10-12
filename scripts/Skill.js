@@ -132,7 +132,7 @@ const selected = (!tokens.length ? false : true);
 
 let actors = tokens.map(o => o.actor);
 if (!actors.length) 
-  actors = game.actors.entities.filter(o => o.isPC && o.hasPerm(game.user, "OWNER"));
+  actors = game.actors.entities.filter(o => o.hasPlayerOwner && o.hasPerm(game.user, "OWNER"));
 actors = actors.filter(o => o.hasPerm(game.user, "OWNER"));
 
 if (!actors.length) 
